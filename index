@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>River Litter</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            user-select: none;
+        }
+        
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        #startMenu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 100, 200, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        
+        #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(200, 50, 50, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        
+        #victoryScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, 
+                red, orange, yellow, green, blue, indigo, violet);
+            background-size: 600% 600%;
+            animation: rainbow 5s ease infinite;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        
+        @keyframes rainbow {
+            0% {background-position: 0% 50%;}
+            50% {background-position: 100% 50%;}
+            100% {background-position: 0% 50%;}
+        }
+        
+        h1 {
+            color: white;
+            font-size: 3em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+        }
+        
+        button {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        #background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #7CFC00; /* grass green */
+        }
+        
+        #river {
+            position: absolute;
+            top: 60%;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background-color: #1E90FF; /* dodger blue */
+        }
+        
+        .trash {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: #808080;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 5;
+        }
+        
+        #scoreDisplay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1.5em;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+            z-index: 5;
+        }
+        
+        #livesDisplay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5em;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+            z-index: 5;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="background"></div>
+        <div id="river"></div>
+        <div id="scoreDisplay">Score: 0</div>
+        <div id="livesDisplay">Lives: 3</div>
+        
+        <div id="startMenu">
+            <h1>River Litter</h1>
+            <p style="color: white; margin-bottom: 30px;">Click on the trash to clean the river!</p>
+            <button id="startButton">Start Game</button>
+        </div>
+        
+        <div id="gameOverScreen">
+            <h1>Game Over</h1>
+            <p id="finalScore" style="color: white; margin-bottom: 30px;"></p>
+            <button id="retryButton">Try Again</button>
+        </div>
+        
+        <div id="victoryScreen">
+            <h1>You Win!</h1>
+            <p style="color: white; margin-bottom: 30px;">The river is clean!</p>
+            <button id="playAgainButton">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        let score = 0;
+        let lives = 3;
+        let gameActive = false;
+        let trashElements = [];
+        let trashSpeed = 2;
+        let spawnInterval = 1500;
+        let gameLoopId;
+        let spawnLoopId;
+        const VICTORY_SCORE = 20;
+        
+        // DOM elements
+        const gameContainer = document.getElementById('gameContainer');
+        const startMenu = document.getElementById('startMenu');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const victoryScreen = document.getElementById('victoryScreen');
+        const startButton = document.getElementById('startButton');
+        const retryButton = document.getElementById('retryButton');
+        const playAgainButton = document.getElementById('playAgainButton');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const livesDisplay = document.getElementById('livesDisplay');
+        const finalScore = document.getElementById('finalScore');
+        const river = document.getElementById('river');
+        
+        // River position
+        const riverRect = river.getBoundingClientRect();
+        const riverTop = riverRect.top;
+        const riverHeight = riverRect.height;
+        
+        // Event listeners
+        startButton.addEventListener('click', startGame);
+        retryButton.addEventListener('click', startGame);
+        playAgainButton.addEventListener('click', startGame);
+        
+        // Start game function
+        function startGame() {
+            // Reset game state
+            score = 0;
+            lives = 3;
+            gameActive = true;
+            trashSpeed = 2;
+            spawnInterval = 1500;
+            
+            // Clear any existing trash
+            trashElements.forEach(trash => trash.remove());
+            trashElements = [];
+            
+            // Update displays
+            scoreDisplay.textContent = `Score: ${score}`;
+            livesDisplay.textContent = `Lives: ${lives}`;
+            
+            // Hide menus
+            startMenu.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            victoryScreen.style.display = 'none';
+            
+            // Start game loops
+            gameLoopId = requestAnimationFrame(gameLoop);
+            spawnLoopId = setInterval(spawnTrash, spawnInterval);
+        }
+        
+        // Game over function
+        function gameOver() {
+            gameActive = false;
+            cancelAnimationFrame(gameLoopId);
+            clearInterval(spawnLoopId);
+            
+            finalScore.textContent = `Final Score: ${score}`;
+            gameOverScreen.style.display = 'flex';
+        }
+        
+        // Victory function
+        function victory() {
+            gameActive = false;
+            cancelAnimationFrame(gameLoopId);
+            clearInterval(spawnLoopId);
+            
+            victoryScreen.style.display = 'flex';
+        }
+        
+        // Spawn trash function
+        function spawnTrash() {
+            if (!gameActive) return;
+            
+            const trash = document.createElement('div');
+            trash.className = 'trash';
+            
+            // Randomly choose which side the trash comes from
+            const fromLeft = Math.random() > 0.5;
+            
+            // Position trash just outside the screen on its starting side
+            const xPos = fromLeft ? -30 : gameContainer.clientWidth;
+            const yPos = riverTop + Math.random() * (riverHeight - 30);
+            
+            trash.style.left = `${xPos}px`;
+            trash.style.top = `${yPos}px`;
+            
+            // Set direction and speed
+            trash.dataset.speed = fromLeft ? trashSpeed : -trashSpeed;
+            
+            // Add click event
+            trash.addEventListener('click', () => {
+                if (!gameActive) return;
+                
+                // Remove trash
+                trash.remove();
+                trashElements = trashElements.filter(t => t !== trash);
+                
+                // Increase score
+                score++;
+                scoreDisplay.textContent = `Score: ${score}`;
+                
+                // Increase difficulty
+                if (score % 5 === 0) {
+                    trashSpeed += 0.5;
+                    spawnInterval = Math.max(500, spawnInterval - 100);
+                    clearInterval(spawnLoopId);
+                    spawnLoopId = setInterval(spawnTrash, spawnInterval);
+                }
+                
+                // Check for victory
+                if (score >= VICTORY_SCORE) {
+                    victory();
+                }
+            });
+            
+            gameContainer.appendChild(trash);
+            trashElements.push(trash);
+        }
+        
+        // Main game loop
+        function gameLoop() {
+            if (!gameActive) return;
+            
+            // Move all trash
+            trashElements.forEach(trash => {
+                const currentX = parseFloat(trash.style.left);
+                const speed = parseFloat(trash.dataset.speed);
+                const newX = currentX + speed;
+                
+                trash.style.left = `${newX}px`;
+                
+                // Check if trash moved out of screen
+                if ((speed > 0 && newX > gameContainer.clientWidth) || 
+                    (speed < 0 && newX < -30)) {
+                    
+                    // Remove trash
+                    trash.remove();
+                    trashElements = trashElements.filter(t => t !== trash);
+                    
+                    // Decrease lives
+                    lives--;
+                    livesDisplay.textContent = `Lives: ${lives}`;
+                    
+                    // Check for game over
+                    if (lives <= 0) {
+                        gameOver();
+                    }
+                }
+            });
+            
+            gameLoopId = requestAnimationFrame(gameLoop);
+        }
+    </script>
+</body>
+</html>
