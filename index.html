@@ -87,10 +87,27 @@
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s;
+            margin: 5px;
         }
         
         button:hover {
             background-color: #45a049;
+        }
+        
+        .difficulty-btn {
+            width: 150px;
+        }
+        
+        .easy-btn {
+            background-color: #4CAF50; /* Green */
+        }
+        
+        .normal-btn {
+            background-color: #FFA500; /* Orange */
+        }
+        
+        .hard-btn {
+            background-color: #f44336; /* Red */
         }
         
         #background {
@@ -140,6 +157,26 @@
             text-shadow: 1px 1px 2px black;
             z-index: 5;
         }
+        
+        #difficultyDisplay {
+            position: absolute;
+            top: 60px;
+            left: 20px;
+            font-size: 1.2em;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+            z-index: 5;
+        }
+        
+        #goalDisplay {
+            position: absolute;
+            top: 90px;
+            left: 20px;
+            font-size: 1.2em;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+            z-index: 5;
+        }
     </style>
 </head>
 <body>
@@ -148,11 +185,16 @@
         <div id="river"></div>
         <div id="scoreDisplay">Score: 0</div>
         <div id="livesDisplay">Lives: 3</div>
+        <div id="difficultyDisplay">Difficulty: Normal</div>
+        <div id="goalDisplay">Goal: 20</div>
         
         <div id="startMenu">
             <h1>River Litter</h1>
             <p style="color: white; margin-bottom: 30px;">Click on the trash to clean the river!</p>
-            <button id="startButton">Start Game</button>
+            <p style="color: white; margin-bottom: 15px;">Select difficulty:</p>
+            <button id="easyButton" class="difficulty-btn easy-btn">Easy</button>
+            <button id="normalButton" class="difficulty-btn normal-btn">Normal</button>
+            <button id="hardButton" class="difficulty-btn hard-btn">Hard</button>
         </div>
         
         <div id="gameOverScreen">
@@ -178,18 +220,52 @@
         let spawnInterval = 1500;
         let gameLoopId;
         let spawnLoopId;
-        const VICTORY_SCORE = 20;
+        let victoryScore = 20;
+        let currentDifficulty = "Normal";
+        
+        // Difficulty settings
+        const difficultySettings = {
+            "Easy": {
+                initialSpeed: 1.5,
+                initialSpawnInterval: 2000,
+                lives: 5,
+                victoryScore: 15,
+                speedIncrease: 0.3,
+                spawnIntervalDecrease: 80
+            },
+            "Normal": {
+                initialSpeed: 2,
+                initialSpawnInterval: 1500,
+                lives: 3,
+                victoryScore: 20,
+                speedIncrease: 0.5,
+                spawnIntervalDecrease: 100
+            },
+            "Hard": {
+                initialSpeed: 3,
+                initialSpawnInterval: 1000,
+                lives: 2,
+                victoryScore: 30,
+                speedIncrease: 0.7,
+                spawnIntervalDecrease: 120,
+                randomDirection: true
+            }
+        };
         
         // DOM elements
         const gameContainer = document.getElementById('gameContainer');
         const startMenu = document.getElementById('startMenu');
         const gameOverScreen = document.getElementById('gameOverScreen');
         const victoryScreen = document.getElementById('victoryScreen');
-        const startButton = document.getElementById('startButton');
+        const easyButton = document.getElementById('easyButton');
+        const normalButton = document.getElementById('normalButton');
+        const hardButton = document.getElementById('hardButton');
         const retryButton = document.getElementById('retryButton');
         const playAgainButton = document.getElementById('playAgainButton');
         const scoreDisplay = document.getElementById('scoreDisplay');
         const livesDisplay = document.getElementById('livesDisplay');
+        const difficultyDisplay = document.getElementById('difficultyDisplay');
+        const goalDisplay = document.getElementById('goalDisplay');
         const finalScore = document.getElementById('finalScore');
         const river = document.getElementById('river');
         
@@ -199,18 +275,24 @@
         const riverHeight = riverRect.height;
         
         // Event listeners
-        startButton.addEventListener('click', startGame);
-        retryButton.addEventListener('click', startGame);
-        playAgainButton.addEventListener('click', startGame);
+        easyButton.addEventListener('click', () => startGame("Easy"));
+        normalButton.addEventListener('click', () => startGame("Normal"));
+        hardButton.addEventListener('click', () => startGame("Hard"));
+        retryButton.addEventListener('click', () => startGame(currentDifficulty));
+        playAgainButton.addEventListener('click', () => startGame(currentDifficulty));
         
         // Start game function
-        function startGame() {
-            // Reset game state
+        function startGame(difficulty) {
+            currentDifficulty = difficulty;
+            const settings = difficultySettings[difficulty];
+            
+            // Reset game state with difficulty settings
             score = 0;
-            lives = 3;
+            lives = settings.lives;
             gameActive = true;
-            trashSpeed = 2;
-            spawnInterval = 1500;
+            trashSpeed = settings.initialSpeed;
+            spawnInterval = settings.initialSpawnInterval;
+            victoryScore = settings.victoryScore;
             
             // Clear any existing trash
             trashElements.forEach(trash => trash.remove());
@@ -219,6 +301,8 @@
             // Update displays
             scoreDisplay.textContent = `Score: ${score}`;
             livesDisplay.textContent = `Lives: ${lives}`;
+            difficultyDisplay.textContent = `Difficulty: ${difficulty}`;
+            goalDisplay.textContent = `Goal: ${victoryScore}`;
             
             // Hide menus
             startMenu.style.display = 'none';
@@ -256,8 +340,13 @@
             const trash = document.createElement('div');
             trash.className = 'trash';
             
-            // Randomly choose which side the trash comes from
-            const fromLeft = Math.random() > 0.5;
+            // Randomly choose which side the trash comes from (or random direction for Hard mode)
+            let fromLeft;
+            if (difficultySettings[currentDifficulty].randomDirection) {
+                fromLeft = Math.random() > 0.5;
+            } else {
+                fromLeft = Math.random() > 0.5;
+            }
             
             // Position trash just outside the screen on its starting side
             const xPos = fromLeft ? -30 : gameContainer.clientWidth;
@@ -281,16 +370,17 @@
                 score++;
                 scoreDisplay.textContent = `Score: ${score}`;
                 
-                // Increase difficulty
+                // Increase difficulty based on settings
+                const settings = difficultySettings[currentDifficulty];
                 if (score % 5 === 0) {
-                    trashSpeed += 0.5;
-                    spawnInterval = Math.max(500, spawnInterval - 100);
+                    trashSpeed += settings.speedIncrease;
+                    spawnInterval = Math.max(300, spawnInterval - settings.spawnIntervalDecrease);
                     clearInterval(spawnLoopId);
                     spawnLoopId = setInterval(spawnTrash, spawnInterval);
                 }
                 
                 // Check for victory
-                if (score >= VICTORY_SCORE) {
+                if (score >= victoryScore) {
                     victory();
                 }
             });
