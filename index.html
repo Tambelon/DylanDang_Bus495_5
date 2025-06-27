@@ -228,6 +228,17 @@
             animation: fadeInOut 3s ease-in-out;
         }
         
+        #headerImage {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 90%;
+            max-height: 20vh;
+            z-index: 4;
+            display: none;
+        }
+        
         @keyframes fadeInOut {
             0% { opacity: 0; }
             20% { opacity: 1; }
@@ -270,6 +281,7 @@
 <body>
     <div id="gameContainer">
         <div id="background"></div>
+        <img id="headerImage" src="charityriver_header.png" alt="Clean River Initiative">
         <div id="river"></div>
         <div id="scoreDisplay">Score: 0</div>
         <div id="livesDisplay">Lives: 3</div>
@@ -374,6 +386,7 @@
         const finalScore = document.getElementById('finalScore');
         const river = document.getElementById('river');
         const milestoneMessage = document.getElementById('milestoneMessage');
+        const headerImage = document.getElementById('headerImage');
         
         // River position
         const riverRect = river.getBoundingClientRect();
@@ -411,11 +424,12 @@
             difficultyDisplay.textContent = `Difficulty: ${difficulty}`;
             goalDisplay.textContent = `Goal: ${victoryScore}`;
             
-            // Hide menus and milestone message
+            // Hide menus and show header image
             startMenu.style.display = 'none';
             gameOverScreen.style.display = 'none';
             victoryScreen.style.display = 'none';
             milestoneMessage.style.display = 'none';
+            headerImage.style.display = 'block';
             
             // Start background sound
             riverSound.currentTime = 0;
@@ -447,6 +461,9 @@
             riverSound.pause();
             gameOverSound.play().catch(e => console.log("Audio play failed:", e));
             
+            // Hide header image
+            headerImage.style.display = 'none';
+            
             finalScore.textContent = `Final Score: ${score}`;
             gameOverScreen.style.display = 'flex';
         }
@@ -460,6 +477,9 @@
             // Stop river sound and play victory sound
             riverSound.pause();
             victorySound.play().catch(e => console.log("Audio play failed:", e));
+            
+            // Hide header image
+            headerImage.style.display = 'none';
             
             victoryScreen.style.display = 'flex';
         }
