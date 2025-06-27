@@ -177,6 +177,31 @@
             text-shadow: 1px 1px 2px black;
             z-index: 5;
         }
+        
+        #footer {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            z-index: 5;
+        }
+        
+        #footer a {
+            color: white;
+            text-decoration: none;
+            font-size: 1em;
+            text-shadow: 1px 1px 2px black;
+            padding: 8px 15px;
+            background-color: rgba(0, 100, 200, 0.7);
+            border-radius: 20px;
+            transition: background-color 0.3s;
+        }
+        
+        #footer a:hover {
+            background-color: rgba(0, 100, 200, 1);
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -187,6 +212,10 @@
         <div id="livesDisplay">Lives: 3</div>
         <div id="difficultyDisplay">Difficulty: Normal</div>
         <div id="goalDisplay">Goal: 20</div>
+        
+        <div id="footer">
+            <a href="https://www.charitywater.org/home" target="_blank">Support clean water initiatives worldwide</a>
+        </div>
         
         <div id="startMenu">
             <h1>River Litter</h1>
