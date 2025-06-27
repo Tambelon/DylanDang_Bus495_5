@@ -209,6 +209,32 @@
             font-family: 'Proxima Nova', 'Montserrat', 'Open Sans', Arial, sans-serif;
         }
         
+        #milestoneMessage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2em;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            background-color: rgba(0, 100, 200, 0.7);
+            padding: 20px 40px;
+            border-radius: 10px;
+            z-index: 20;
+            display: none;
+            text-align: center;
+            font-family: 'Proxima Nova', 'Montserrat', 'Open Sans', Arial, sans-serif;
+            font-weight: bold;
+            animation: fadeInOut 3s ease-in-out;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        
         #footer {
             position: absolute;
             bottom: 10px;
@@ -249,6 +275,7 @@
         <div id="livesDisplay">Lives: 3</div>
         <div id="difficultyDisplay">Difficulty: Normal</div>
         <div id="goalDisplay">Goal: 20</div>
+        <div id="milestoneMessage">Almost there! Keep up the good work!</div>
         
         <div id="footer">
             <a href="https://www.charitywater.org/home" target="_blank">Support clean water initiatives worldwide</a>
@@ -288,6 +315,7 @@
         let spawnLoopId;
         let victoryScore = 20;
         let currentDifficulty = "Normal";
+        let milestoneShown = false;
         
         // Sound variables
         const riverSound = new Audio('sound/river.mp3');
@@ -295,6 +323,7 @@
         const loseSound = new Audio('sound/lose.mp3');
         const victorySound = new Audio('sound/victory.mp3');
         const gameOverSound = new Audio('sound/game_over.mp3');
+        const milestoneSound = new Audio('sound/milestone.mp3');
         
         // Configure river sound to loop
         riverSound.loop = true;
@@ -344,6 +373,7 @@
         const goalDisplay = document.getElementById('goalDisplay');
         const finalScore = document.getElementById('finalScore');
         const river = document.getElementById('river');
+        const milestoneMessage = document.getElementById('milestoneMessage');
         
         // River position
         const riverRect = river.getBoundingClientRect();
@@ -369,6 +399,7 @@
             trashSpeed = settings.initialSpeed;
             spawnInterval = settings.initialSpawnInterval;
             victoryScore = settings.victoryScore;
+            milestoneShown = false;
             
             // Clear any existing trash
             trashElements.forEach(trash => trash.remove());
@@ -380,10 +411,11 @@
             difficultyDisplay.textContent = `Difficulty: ${difficulty}`;
             goalDisplay.textContent = `Goal: ${victoryScore}`;
             
-            // Hide menus
+            // Hide menus and milestone message
             startMenu.style.display = 'none';
             gameOverScreen.style.display = 'none';
             victoryScreen.style.display = 'none';
+            milestoneMessage.style.display = 'none';
             
             // Start background sound
             riverSound.currentTime = 0;
@@ -392,6 +424,17 @@
             // Start game loops
             gameLoopId = requestAnimationFrame(gameLoop);
             spawnLoopId = setInterval(spawnTrash, spawnInterval);
+        }
+        
+        // Show milestone message
+        function showMilestone() {
+            milestoneMessage.style.display = 'block';
+            milestoneSound.play().catch(e => console.log("Audio play failed:", e));
+            
+            // Hide after animation completes
+            setTimeout(() => {
+                milestoneMessage.style.display = 'none';
+            }, 3000);
         }
         
         // Game over function
@@ -461,6 +504,12 @@
                 // Increase score
                 score++;
                 scoreDisplay.textContent = `Score: ${score}`;
+                
+                // Check for milestone
+                if (!milestoneShown && score > victoryScore / 2) {
+                    milestoneShown = true;
+                    showMilestone();
+                }
                 
                 // Increase difficulty based on settings
                 const settings = difficultySettings[currentDifficulty];
