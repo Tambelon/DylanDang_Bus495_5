@@ -289,6 +289,16 @@
         let victoryScore = 20;
         let currentDifficulty = "Normal";
         
+        // Sound variables
+        const riverSound = new Audio('sound/river.mp3');
+        const popSound = new Audio('sound/pop.mp3');
+        const loseSound = new Audio('sound/lose.mp3');
+        const victorySound = new Audio('sound/victory.mp3');
+        const gameOverSound = new Audio('sound/game_over.mp3');
+        
+        // Configure river sound to loop
+        riverSound.loop = true;
+        
         // Difficulty settings
         const difficultySettings = {
             "Easy": {
@@ -375,6 +385,10 @@
             gameOverScreen.style.display = 'none';
             victoryScreen.style.display = 'none';
             
+            // Start background sound
+            riverSound.currentTime = 0;
+            riverSound.play().catch(e => console.log("Audio play failed:", e));
+            
             // Start game loops
             gameLoopId = requestAnimationFrame(gameLoop);
             spawnLoopId = setInterval(spawnTrash, spawnInterval);
@@ -386,6 +400,10 @@
             cancelAnimationFrame(gameLoopId);
             clearInterval(spawnLoopId);
             
+            // Stop river sound and play game over sound
+            riverSound.pause();
+            gameOverSound.play().catch(e => console.log("Audio play failed:", e));
+            
             finalScore.textContent = `Final Score: ${score}`;
             gameOverScreen.style.display = 'flex';
         }
@@ -395,6 +413,10 @@
             gameActive = false;
             cancelAnimationFrame(gameLoopId);
             clearInterval(spawnLoopId);
+            
+            // Stop river sound and play victory sound
+            riverSound.pause();
+            victorySound.play().catch(e => console.log("Audio play failed:", e));
             
             victoryScreen.style.display = 'flex';
         }
@@ -431,6 +453,10 @@
                 // Remove trash
                 trash.remove();
                 trashElements = trashElements.filter(t => t !== trash);
+                
+                // Play pop sound
+                popSound.currentTime = 0;
+                popSound.play().catch(e => console.log("Audio play failed:", e));
                 
                 // Increase score
                 score++;
@@ -478,6 +504,10 @@
                     // Decrease lives
                     lives--;
                     livesDisplay.textContent = `Lives: ${lives}`;
+                    
+                    // Play lose sound
+                    loseSound.currentTime = 0;
+                    loseSound.play().catch(e => console.log("Audio play failed:", e));
                     
                     // Check for game over
                     if (lives <= 0) {
