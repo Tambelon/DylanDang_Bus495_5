@@ -5,93 +5,349 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>River Litter</title>
     <style>
-        /* (Previous CSS styles remain exactly the same) */
+        /* Proxima Nova font face with fallbacks */
+        @font-face {
+            font-family: 'Proxima Nova';
+            src: local('Proxima Nova'), local('ProximaNova-Regular'),
+                 url('https://cdn.jsdelivr.net/npm/@fontsource/proxima-nova@4.5.0/files/proxima-nova-all-400-normal.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
         
-        /* Add music control button styling */
-        #musicControl {
+        @font-face {
+            font-family: 'Proxima Nova';
+            src: local('Proxima Nova Bold'), local('ProximaNova-Bold'),
+                 url('https://cdn.jsdelivr.net/npm/@fontsource/proxima-nova@4.5.0/files/proxima-nova-all-700-normal.woff') format('woff');
+            font-weight: bold;
+            font-style: normal;
+            font-display: swap;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Proxima Nova', 'Montserrat', 'Open Sans', Arial, sans-serif;
+            overflow: hidden;
+            user-select: none;
+        }
+        
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Proxima Nova', 'Montserrat', 'Open Sans', Arial, sans-serif;
+        }
+        
+        #startMenu {
             position: absolute;
-            bottom: 60px;
-            right: 20px;
-            z-index: 5;
-            background-color: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 100, 200, 0.9);
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
+            z-index: 10;
+            font-family: 'Proxima Nova', 'Montserrat', 'Open Sans', Arial, sans-serif;
+        }
+        
+        #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(200, 50, 50, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            font-family: 'Proxima Nova', 'Montserrat', 'Open Sans', Arial, sans-serif;
+        }
+        
+        #victoryScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, 
+                red, orange, yellow, green, blue, indigo, violet);
+            background-size: 600% 600%;
+            animation: rainbow 5s ease infinite;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            font-family: 'Proxima Nova', 'Montserrat', 'Open Sans', Arial, sans-serif;
+        }
+        
+        @keyframes rainbow {
+            0% {background-position: 0% 50%;}
+            50% {background-position: 100% 50%;}
+            100% {background-position: 0% 50%;}
+        }
+        
+        h1 {
+            color: white;
+            font-size: 3em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+            font-family: 'Proxima Nova', 'Montserrat', 'Open Sans', Arial, sans-serif;
+            font-weight: bold;
+        }
+        
+        button {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s;
+            margin: 5px;
+            font-family: 'Proxima Nova', 'Montserrat', 'Open Sans', Arial, sans-serif;
+            font-weight: bold;
         }
         
-        #musicControl:hover {
-            background-color: rgba(255, 255, 255, 0.5);
+        button:hover {
+            background-color: #45a049;
         }
         
-        #musicIcon {
+        .difficulty-btn {
+            width: 150px;
+        }
+        
+        .easy-btn {
+            background-color: #4CAF50; /* Green */
+        }
+        
+        .normal-btn {
+            background-color: #FFA500; /* Orange */
+        }
+        
+        .hard-btn {
+            background-color: #f44336; /* Red */
+        }
+        
+        #background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #7CFC00; /* grass green */
+        }
+        
+        #river {
+            position: absolute;
+            top: 60%;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background-color: #1E90FF; /* dodger blue */
+        }
+        
+        .trash {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: #808080;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 5;
+        }
+        
+        #scoreDisplay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1.5em;
             color: white;
-            font-size: 20px;
+            text-shadow: 1px 1px 2px black;
+            z-index: 5;
+            font-family: 'Proxima Nova', 'Montserrat', 'Open Sans', Arial, sans-serif;
+        }
+        
+        #livesDisplay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5em;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+            z-index: 5;
+            font-family: 'Proxima Nova', 'Montserrat', 'Open Sans', Arial, sans-serif;
+        }
+        
+        #difficultyDisplay {
+            position: absolute;
+            top: 60px;
+            left: 20px;
+            font-size: 1.2em;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+            z-index: 5;
+            font-family: 'Proxima Nova', 'Montserrat', 'Open Sans', Arial, sans-serif;
+        }
+        
+        #goalDisplay {
+            position: absolute;
+            top: 90px;
+            left: 20px;
+            font-size: 1.2em;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+            z-index: 5;
+            font-family: 'Proxima Nova', 'Montserrat', 'Open Sans', Arial, sans-serif;
+        }
+        
+        #footer {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            z-index: 5;
+            font-family: 'Proxima Nova', 'Montserrat', 'Open Sans', Arial, sans-serif;
+        }
+        
+        #footer a {
+            color: white;
+            text-decoration: none;
+            font-size: 1em;
+            text-shadow: 1px 1px 2px black;
+            padding: 8px 15px;
+            background-color: rgba(0, 100, 200, 0.7);
+            border-radius: 20px;
+            transition: background-color 0.3s;
+            font-family: 'Proxima Nova', 'Montserrat', 'Open Sans', Arial, sans-serif;
+        }
+        
+        #footer a:hover {
+            background-color: rgba(0, 100, 200, 1);
+            text-decoration: underline;
+        }
+        
+        p {
+            font-family: 'Proxima Nova', 'Montserrat', 'Open Sans', Arial, sans-serif;
         }
     </style>
 </head>
 <body>
     <div id="gameContainer">
-        <!-- (Previous HTML content remains exactly the same) -->
+        <div id="background"></div>
+        <div id="river"></div>
+        <div id="scoreDisplay">Score: 0</div>
+        <div id="livesDisplay">Lives: 3</div>
+        <div id="difficultyDisplay">Difficulty: Normal</div>
+        <div id="goalDisplay">Goal: 20</div>
         
-        <!-- Add music control button -->
-        <div id="musicControl" title="Toggle Music">
-            <span id="musicIcon">♪</span>
+        <div id="footer">
+            <a href="https://www.charitywater.org/home" target="_blank">Support clean water initiatives worldwide</a>
+        </div>
+        
+        <div id="startMenu">
+            <h1>River Litter</h1>
+            <p style="color: white; margin-bottom: 30px;">Click on the trash to clean the river!</p>
+            <p style="color: white; margin-bottom: 15px;">Select difficulty:</p>
+            <button id="easyButton" class="difficulty-btn easy-btn">Easy</button>
+            <button id="normalButton" class="difficulty-btn normal-btn">Normal</button>
+            <button id="hardButton" class="difficulty-btn hard-btn">Hard</button>
+        </div>
+        
+        <div id="gameOverScreen">
+            <h1>Game Over</h1>
+            <p id="finalScore" style="color: white; margin-bottom: 30px;"></p>
+            <button id="retryButton">Try Again</button>
+        </div>
+        
+        <div id="victoryScreen">
+            <h1>You Win!</h1>
+            <p style="color: white; margin-bottom: 30px;">The river is clean!</p>
+            <button id="playAgainButton">Play Again</button>
         </div>
     </div>
 
-    <!-- Add audio element -->
-    <audio id="backgroundMusic" loop>
-        <source src="sound/river.mp3" type="audio/mpeg">
-        Your browser does not support the audio element.
-    </audio>
-
     <script>
-        // (Previous game variables remain the same)
+        // Game variables
+        let score = 0;
+        let lives = 3;
+        let gameActive = false;
+        let trashElements = [];
+        let trashSpeed = 2;
+        let spawnInterval = 1500;
+        let gameLoopId;
+        let spawnLoopId;
+        let victoryScore = 20;
+        let currentDifficulty = "Normal";
         
-        // Add music variables
-        let musicEnabled = true;
-        const backgroundMusic = document.getElementById('backgroundMusic');
-        const musicControl = document.getElementById('musicControl');
-        const musicIcon = document.getElementById('musicIcon');
-        
-        // Try to play music (will fail without user interaction on some browsers)
-        function tryPlayMusic() {
-            if (musicEnabled) {
-                const playPromise = backgroundMusic.play();
-                
-                if (playPromise !== undefined) {
-                    playPromise.catch(error => {
-                        // Auto-play was prevented, show muted state
-                        musicEnabled = false;
-                        backgroundMusic.pause();
-                        musicIcon.textContent = "🔇";
-                    });
-                }
+        // Difficulty settings
+        const difficultySettings = {
+            "Easy": {
+                initialSpeed: 1.5,
+                initialSpawnInterval: 2000,
+                lives: 5,
+                victoryScore: 15,
+                speedIncrease: 0.3,
+                spawnIntervalDecrease: 80
+            },
+            "Normal": {
+                initialSpeed: 2,
+                initialSpawnInterval: 1500,
+                lives: 3,
+                victoryScore: 20,
+                speedIncrease: 0.5,
+                spawnIntervalDecrease: 100
+            },
+            "Hard": {
+                initialSpeed: 3,
+                initialSpawnInterval: 1000,
+                lives: 2,
+                victoryScore: 30,
+                speedIncrease: 0.7,
+                spawnIntervalDecrease: 120,
+                randomDirection: true
             }
-        }
+        };
         
-        // Toggle music function
-        function toggleMusic() {
-            musicEnabled = !musicEnabled;
-            
-            if (musicEnabled) {
-                backgroundMusic.play();
-                musicIcon.textContent = "♪";
-            } else {
-                backgroundMusic.pause();
-                musicIcon.textContent = "🔇";
-            }
-        }
+        // DOM elements
+        const gameContainer = document.getElementById('gameContainer');
+        const startMenu = document.getElementById('startMenu');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const victoryScreen = document.getElementById('victoryScreen');
+        const easyButton = document.getElementById('easyButton');
+        const normalButton = document.getElementById('normalButton');
+        const hardButton = document.getElementById('hardButton');
+        const retryButton = document.getElementById('retryButton');
+        const playAgainButton = document.getElementById('playAgainButton');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const livesDisplay = document.getElementById('livesDisplay');
+        const difficultyDisplay = document.getElementById('difficultyDisplay');
+        const goalDisplay = document.getElementById('goalDisplay');
+        const finalScore = document.getElementById('finalScore');
+        const river = document.getElementById('river');
         
-        // Add music control event listener
-        musicControl.addEventListener('click', toggleMusic);
+        // River position
+        const riverRect = river.getBoundingClientRect();
+        const riverTop = riverRect.top;
+        const riverHeight = riverRect.height;
         
-        // Start game function (modified to handle music)
+        // Event listeners
+        easyButton.addEventListener('click', () => startGame("Easy"));
+        normalButton.addEventListener('click', () => startGame("Normal"));
+        hardButton.addEventListener('click', () => startGame("Hard"));
+        retryButton.addEventListener('click', () => startGame(currentDifficulty));
+        playAgainButton.addEventListener('click', () => startGame(currentDifficulty));
+        
+        // Start game function
         function startGame(difficulty) {
             currentDifficulty = difficulty;
             const settings = difficultySettings[difficulty];
@@ -119,15 +375,119 @@
             gameOverScreen.style.display = 'none';
             victoryScreen.style.display = 'none';
             
-            // Start music (if enabled)
-            tryPlayMusic();
-            
             // Start game loops
             gameLoopId = requestAnimationFrame(gameLoop);
             spawnLoopId = setInterval(spawnTrash, spawnInterval);
         }
         
-        // (Rest of the JavaScript remains the same)
+        // Game over function
+        function gameOver() {
+            gameActive = false;
+            cancelAnimationFrame(gameLoopId);
+            clearInterval(spawnLoopId);
+            
+            finalScore.textContent = `Final Score: ${score}`;
+            gameOverScreen.style.display = 'flex';
+        }
+        
+        // Victory function
+        function victory() {
+            gameActive = false;
+            cancelAnimationFrame(gameLoopId);
+            clearInterval(spawnLoopId);
+            
+            victoryScreen.style.display = 'flex';
+        }
+        
+        // Spawn trash function
+        function spawnTrash() {
+            if (!gameActive) return;
+            
+            const trash = document.createElement('div');
+            trash.className = 'trash';
+            
+            // Randomly choose which side the trash comes from (or random direction for Hard mode)
+            let fromLeft;
+            if (difficultySettings[currentDifficulty].randomDirection) {
+                fromLeft = Math.random() > 0.5;
+            } else {
+                fromLeft = Math.random() > 0.5;
+            }
+            
+            // Position trash just outside the screen on its starting side
+            const xPos = fromLeft ? -30 : gameContainer.clientWidth;
+            const yPos = riverTop + Math.random() * (riverHeight - 30);
+            
+            trash.style.left = `${xPos}px`;
+            trash.style.top = `${yPos}px`;
+            
+            // Set direction and speed
+            trash.dataset.speed = fromLeft ? trashSpeed : -trashSpeed;
+            
+            // Add click event
+            trash.addEventListener('click', () => {
+                if (!gameActive) return;
+                
+                // Remove trash
+                trash.remove();
+                trashElements = trashElements.filter(t => t !== trash);
+                
+                // Increase score
+                score++;
+                scoreDisplay.textContent = `Score: ${score}`;
+                
+                // Increase difficulty based on settings
+                const settings = difficultySettings[currentDifficulty];
+                if (score % 5 === 0) {
+                    trashSpeed += settings.speedIncrease;
+                    spawnInterval = Math.max(300, spawnInterval - settings.spawnIntervalDecrease);
+                    clearInterval(spawnLoopId);
+                    spawnLoopId = setInterval(spawnTrash, spawnInterval);
+                }
+                
+                // Check for victory
+                if (score >= victoryScore) {
+                    victory();
+                }
+            });
+            
+            gameContainer.appendChild(trash);
+            trashElements.push(trash);
+        }
+        
+        // Main game loop
+        function gameLoop() {
+            if (!gameActive) return;
+            
+            // Move all trash
+            trashElements.forEach(trash => {
+                const currentX = parseFloat(trash.style.left);
+                const speed = parseFloat(trash.dataset.speed);
+                const newX = currentX + speed;
+                
+                trash.style.left = `${newX}px`;
+                
+                // Check if trash moved out of screen
+                if ((speed > 0 && newX > gameContainer.clientWidth) || 
+                    (speed < 0 && newX < -30)) {
+                    
+                    // Remove trash
+                    trash.remove();
+                    trashElements = trashElements.filter(t => t !== trash);
+                    
+                    // Decrease lives
+                    lives--;
+                    livesDisplay.textContent = `Lives: ${lives}`;
+                    
+                    // Check for game over
+                    if (lives <= 0) {
+                        gameOver();
+                    }
+                }
+            });
+            
+            gameLoopId = requestAnimationFrame(gameLoop);
+        }
     </script>
 </body>
 </html>
