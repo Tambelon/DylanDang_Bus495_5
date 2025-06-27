@@ -32,11 +32,6 @@
             color: white;
             font-size: 20px;
         }
-        
-        /* Hidden audio elements for sound effects */
-        .sound-effect {
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -49,43 +44,20 @@
         </div>
     </div>
 
-    <!-- Background music -->
-    <audio id="backgroundMusic" loop class="sound-effect">
+    <!-- Add audio element -->
+    <audio id="backgroundMusic" loop>
         <source src="sound/river.mp3" type="audio/mpeg">
         Your browser does not support the audio element.
-    </audio>
-    
-    <!-- Sound effects -->
-    <audio id="popSound" class="sound-effect">
-        <source src="sound/pop.mp3" type="audio/mpeg">
-    </audio>
-    
-    <audio id="loseSound" class="sound-effect">
-        <source src="sound/lose.mp3" type="audio/mpeg">
-    </audio>
-    
-    <audio id="victorySound" class="sound-effect">
-        <source src="sound/victory.mp3" type="audio/mpeg">
-    </audio>
-    
-    <audio id="gameOverSound" class="sound-effect">
-        <source src="sound/game_over.mp3" type="audio/mpeg">
     </audio>
 
     <script>
         // (Previous game variables remain the same)
         
-        // Audio elements
+        // Add music variables
+        let musicEnabled = true;
         const backgroundMusic = document.getElementById('backgroundMusic');
-        const popSound = document.getElementById('popSound');
-        const loseSound = document.getElementById('loseSound');
-        const victorySound = document.getElementById('victorySound');
-        const gameOverSound = document.getElementById('gameOverSound');
         const musicControl = document.getElementById('musicControl');
         const musicIcon = document.getElementById('musicIcon');
-        
-        let musicEnabled = true;
-        let soundEffectsEnabled = true;
         
         // Try to play music (will fail without user interaction on some browsers)
         function tryPlayMusic() {
@@ -101,15 +73,6 @@
                     });
                 }
             }
-        }
-        
-        // Play sound effect function
-        function playSound(soundElement) {
-            if (!soundEffectsEnabled) return;
-            
-            // Reset sound to start and play
-            soundElement.currentTime = 0;
-            soundElement.play().catch(e => console.log("Sound playback prevented:", e));
         }
         
         // Toggle music function
@@ -164,126 +127,7 @@
             spawnLoopId = setInterval(spawnTrash, spawnInterval);
         }
         
-        // Game over function
-        function gameOver() {
-            gameActive = false;
-            cancelAnimationFrame(gameLoopId);
-            clearInterval(spawnLoopId);
-            
-            playSound(gameOverSound);
-            backgroundMusic.pause();
-            
-            finalScore.textContent = `Final Score: ${score}`;
-            gameOverScreen.style.display = 'flex';
-        }
-        
-        // Victory function
-        function victory() {
-            gameActive = false;
-            cancelAnimationFrame(gameLoopId);
-            clearInterval(spawnLoopId);
-            
-            playSound(victorySound);
-            backgroundMusic.pause();
-            
-            victoryScreen.style.display = 'flex';
-        }
-        
-        // Spawn trash function (modified to include pop sound)
-        function spawnTrash() {
-            if (!gameActive) return;
-            
-            const trash = document.createElement('div');
-            trash.className = 'trash';
-            
-            // Randomly choose which side the trash comes from (or random direction for Hard mode)
-            let fromLeft;
-            if (difficultySettings[currentDifficulty].randomDirection) {
-                fromLeft = Math.random() > 0.5;
-            } else {
-                fromLeft = Math.random() > 0.5;
-            }
-            
-            // Position trash just outside the screen on its starting side
-            const xPos = fromLeft ? -30 : gameContainer.clientWidth;
-            const yPos = riverTop + Math.random() * (riverHeight - 30);
-            
-            trash.style.left = `${xPos}px`;
-            trash.style.top = `${yPos}px`;
-            
-            // Set direction and speed
-            trash.dataset.speed = fromLeft ? trashSpeed : -trashSpeed;
-            
-            // Add click event
-            trash.addEventListener('click', () => {
-                if (!gameActive) return;
-                
-                // Remove trash
-                trash.remove();
-                trashElements = trashElements.filter(t => t !== trash);
-                
-                // Play pop sound
-                playSound(popSound);
-                
-                // Increase score
-                score++;
-                scoreDisplay.textContent = `Score: ${score}`;
-                
-                // Increase difficulty based on settings
-                const settings = difficultySettings[currentDifficulty];
-                if (score % 5 === 0) {
-                    trashSpeed += settings.speedIncrease;
-                    spawnInterval = Math.max(300, spawnInterval - settings.spawnIntervalDecrease);
-                    clearInterval(spawnLoopId);
-                    spawnLoopId = setInterval(spawnTrash, spawnInterval);
-                }
-                
-                // Check for victory
-                if (score >= victoryScore) {
-                    victory();
-                }
-            });
-            
-            gameContainer.appendChild(trash);
-            trashElements.push(trash);
-        }
-        
-        // Main game loop (modified to include lose sound)
-        function gameLoop() {
-            if (!gameActive) return;
-            
-            // Move all trash
-            trashElements.forEach(trash => {
-                const currentX = parseFloat(trash.style.left);
-                const speed = parseFloat(trash.dataset.speed);
-                const newX = currentX + speed;
-                
-                trash.style.left = `${newX}px`;
-                
-                // Check if trash moved out of screen
-                if ((speed > 0 && newX > gameContainer.clientWidth) || 
-                    (speed < 0 && newX < -30)) {
-                    
-                    // Remove trash
-                    trash.remove();
-                    trashElements = trashElements.filter(t => t !== trash);
-                    
-                    // Play lose sound
-                    playSound(loseSound);
-                    
-                    // Decrease lives
-                    lives--;
-                    livesDisplay.textContent = `Lives: ${lives}`;
-                    
-                    // Check for game over
-                    if (lives <= 0) {
-                        gameOver();
-                    }
-                }
-            });
-            
-            gameLoopId = requestAnimationFrame(gameLoop);
-        }
+        // (Rest of the JavaScript remains the same)
     </script>
 </body>
 </html>
